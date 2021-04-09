@@ -1,0 +1,40 @@
+\lstset{autogobble, basicstyle=\ttfamily}
+
+\lstdefinestyle{code}
+  {numbers=left,numberstyle=\sffamily\scriptsize\color{LightGray!50!black},xleftmargin=3.5mm,numbersep=2mm}
+\lstdefinestyle{snippet}
+  {numbers=none}
+
+\lstdefinestyle{matlab}
+  {keywordstyle=\color{green!50!black},
+  stringstyle=\color{red!75!black},
+  commentstyle=\itshape\color{green!50!blue}}
+
+\lstloadlanguages{Matlab,Python,bash}
+
+\lstnewenvironment{matlabcode}
+  {\lstset{language=Matlab,style=code,style=matlab}}
+  {}
+\lstnewenvironment{matlabsnippet}
+  {\lstset{language=Matlab,style=snippet,style=matlab}}
+  {}
+\lstnewenvironment{pythoncode}
+  {\lstset{language=Python,style=code}}
+  {}
+\lstnewenvironment{pythonsnippet}
+  {\lstset{language=Python,style=snippet}}
+  {}
+\lstnewenvironment{shellsnippet}
+  {\lstset{language=bash,style=snippet}}
+  {}
+
+
+\def\matlabsnippetinline{\lstinline[language=Matlab]}
+\def\pythonsnippetinline{\lstinline[language=Python]}
+\def\shellsnippetinline{\lstinline[language=bash]}
+
+
+% % 'Hide' line numbers from copying in PDF
+% \renewcommand*{\thelstnumber}{%
+% \BeginAccSupp{method=escape,ActualText={}}%
+%   \sffamily \textcolor{LightGray!50!black}{\scriptsize\arabic{lstnumber}}\EndAccSupp{}}

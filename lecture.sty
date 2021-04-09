@@ -1,0 +1,373 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{lecture}[2021/04/07 v0.1 Beamer lecture package]
+
+\RequirePackage{pgfopts}
+
+
+\makeatletter
+\newif\iflec@tikz@styles
+\newif\iflec@pgfplots@styles
+\newif\iflec@external@link@symbol
+\newif\iflec@pdf@animations
+
+\pgfkeys{
+  /lec/.cd,
+    code-printing/.is choice,
+    code-printing/none/.code={\def\lec@code@printing{0}},
+    code-printing/listings/.code={\def\lec@code@printing{1}},
+    code-printing/minted/.code={\def\lec@code@printing{2}},
+    code-printing/.default=listings,
+    code-printing=none,
+    tikz-styles/.is if=lec@tikz@styles,
+    tikz-styles/.default=true,
+    tikz-styles=false,
+    external-link-symbol/.is if=lec@external@link@symbol,
+    external-link-symbol/.default=true,
+    external-link-symbol=true,
+    pgfplots-styles/.is if=lec@pgfplots@styles,
+    pgfplots-styles/.default=true,
+    pgfplots-styles=false,
+    pdf-animations/.is if=lec@pdf@animations,
+    pdf-animations/.default=true,
+    pdf-animations=false,
+}
+
+
+\ProcessPgfPackageOptions{/lec}
+\makeatother
+
+%
+% Load standalone
+%
+\RequirePackage{standalone}
+
+%
+% Beamer settings
+%
+\usetheme[width=3cm]{PaloAlto}
+\usefonttheme{professionalfonts}
+
+\setbeamercolor{structure}{fg=Green}
+
+\useinnertheme{rectangles}
+\setbeamertemplate{blocks}[default]
+
+\setbeamercolor{alerted text}{fg=Pink}
+\setbeamercolor{example text}{fg=LightBlue}
+\setbeamercolor{author}{fg=black,bg=white}
+\setbeamercolor{institute}{fg=LightGray,bg=white}
+\setbeamercolor{date}{fg=black,bg=white}
+
+\setbeamerfont{title in sidebar}{size=\footnotesize}
+\setbeamerfont{footnote}{size=\scriptsize}
+
+%
+% Beamer templates
+%
+\makeatletter
+\def\lec@extratitlepagetikz{}
+\NewDocumentCommand\extratitlepagetikz{ m }{
+  \def\lec@extratitlepagetikz{#1}}
+
+\mode<presentation>{%
+\RenewDocumentCommand\titlepage{}{%
+\begingroup
+  \setbeamertemplate{sidebar left}{}%
+  \setbeamertemplate{navigation symbols}{}%
+  \setbeamercolor{sidebar}{bg=white}%
+  \begin{frame}{\insertcourse \hfill \texttt{\insertcoursecode}}
+    \begin{tikzpicture}[overlay, remember picture]
+      \usebeamercolor{title}
+      \node (title) [text=fg,fill=bg,text width=12cm,align=flush center,inner ysep=3mm]
+        at (current page.center) {\usebeamerfont{title}\strut\inserttitle};
+
+      \usebeamercolor{author}
+      \node (author) [text=fg, fill=bg,text width=12cm,align=center,below=2mm of title]
+        {\usebeamerfont{author}\insertauthor};
+
+      \usebeamercolor{institute}
+      \node (institute) [text=fg, fill=bg,text width=12cm,align=center,below=2mm of author]
+        {\usebeamerfont{institute}\insertinstitute};
+
+      \usebeamercolor{date}
+      \node (date) [text=fg, fill=bg,text width=12cm,align=center,below=2mm of institute]
+        {\usebeamerfont{date}\insertdate};
+
+      \lec@extratitlepagetikz
+
+    \end{tikzpicture}
+  \end{frame}
+\endgroup
+}
+}
+\makeatother
+
+%=============
+% Lecture options
+%=============
+
+\providecommand*\theLecture{0}
+
+\mode<article>{\newcounter{lecture}}
+
+\makeatletter
+\newcommand\includelecture[1]{%
+\ifnum0=\theLecture%
+  \setcounter{lecture}{#1}%
+  \include{lectures/lecture-#1}%
+\else%
+  \ifnum#1=\theLecture%
+    \setcounter{lecture}{#1}%
+    \include{lectures/lecture-#1}%
+  \fi%
+\fi%
+}
+\makeatother
+
+\pgfkeys{
+  /lecture/.cd,
+    date/.code={\date{#1}},
+    author/.code={\author{#1}},
+}
+
+\makeatletter
+\RenewDocumentCommand\lecture{ O{} m }{%
+  \pgfkeys{/lecture/.cd, #1}
+  \def\inserttitle{Lecture~\Roman{lecture}: #2}
+  \def\beamer@shorttitle{\textbf{\insertshortcourse}\\Lecture \Roman{lecture}}
+  \mode<presentation>{\expandafter\part{\inserttitle}}
+  \mode<article>{\part{#2}}
+  \mode<presentation>{\titlepage}
+}
+\makeatother
+
+% Fix empty title for rectangular blocks:
+% https://tex.stackexchange.com/a/377781/74459
+\mode<presentation>{%
+\setbeamertemplate{block begin}
+{%
+  \par\vskip\medskipamount%
+  \IfStrEq{\insertblocktitle}{}{}{%
+      \begin{beamercolorbox}[colsep*=.75ex]{block title}
+        \usebeamerfont*{block title}\insertblocktitle%
+      \end{beamercolorbox}%
+  }
+  {\parskip0pt\par}%
+  \ifbeamercolorempty[bg]{block title}%
+  {}%
+  {\ifbeamercolorempty[bg]{block body}{}{\nointerlineskip\vskip-0.5pt}}%
+  \usebeamerfont{block body}%
+  \begin{beamercolorbox}[colsep*=.75ex,vmode]{block body}%
+    \ifbeamercolorempty[bg]{block body}{\vskip-.25ex}{\vskip-.75ex}\vbox{}%
+}
+}
+
+% No navigation symbols for more space
+\setbeamertemplate{navigation symbols}{}
+
+\makeatletter
+\mode<presentation>{%
+\addtobeamertemplate{sidebar \beamer@sidebarside}{}{%
+\begin{minipage}{0.5\beamer@sidebarwidth+3em}
+  \usebeamerfont{title in sidebar}\usebeamercolor[fg]{title in sidebar}\hfill\strut\insertframenumber\,/\,\inserttotalframenumber\hspace{1ex}
+\end{minipage}\\\vspace*{0.5em}}
+}
+\makeatother
+
+\def\sectioncontentstitle{What will you learn in today's lecture}
+
+\AtBeginSection[]{%
+  \begin{frame}
+    \frametitle{\sectioncontentstitle}
+    \tableofcontents[currentsection,part=\insertpartnumber]
+  \end{frame}}
+
+\logo{\includegraphics[width=2.5cm,page=12]{LG_SAXION.pdf}}
+
+%
+% Required packages
+%
+\RequirePackage{xstring}
+\RequirePackage{graphicx}
+\makeatletter
+\ifcase\lec@code@printing
+\or
+  \RequirePackage{listings}
+  \RequirePackage{lstautogobble}
+  \RequirePackage{accsupp}
+\or
+  \RequirePackage{minted}
+  \RequirePackage{accsupp}
+\fi
+\iflec@pdf@animations
+  \RequirePackage{animate}
+\fi
+\makeatother
+\RequirePackage{mathtools}
+\RequirePackage{booktabs}
+\RequirePackage{fontspec}
+\RequirePackage[math-style=ISO,warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+\RequirePackage{siunitx}
+\RequirePackage{hyperref}
+
+%
+% Fonts
+%
+\mode<presentation>{\setsansfont[BoldFont={Auto 1 Bold},ItalicFont={Auto 1 Italic},BoldItalicFont={Auto 1 Bold Italic}]{Auto 1 Regular}}
+\mode<article>{\setmainfont{Arial}}
+% Math font same as Robotics, Vision and Control - Peter Corke
+\setmathfont{TeX Gyre Termes Math}
+\setmathfont[range=cal,StylisticSet=1]{XITS Math}
+\setmonofont[Scale=0.9]{Consolas}
+
+\sisetup{math-rm=\symup,math-sf=\symup,detect-all}
+\DeclareSIUnit[number-unit-product = ]\percent{\char`\%}
+\setoperatorfont\symup
+
+%
+% Saxion corporate style colors
+%
+\RequirePackage{xcolor}
+
+\definecolor{Green}{RGB}{0, 156, 130}
+\definecolor{LightGray}{RGB}{198, 197, 191}
+\definecolor{LightBlue}{RGB}{133, 206, 228}
+\definecolor{Pink}{RGB}{219, 6, 81}
+\definecolor{Yellow}{RGB}{255, 221, 0}
+
+%
+% General settings
+%
+\graphicspath{{../figures/},{./figures}}
+% \DeclareGraphicsRule{.mps}{eps}{*}{}
+
+
+%
+% Document structure settings
+%
+\NewDocumentCommand\wrapupSection{ O{Wrapping-up and resources}}{%
+  \begingroup%
+  \AtBeginSection{}%
+  \section*{#1}%
+  \endgroup%
+}
+
+%
+% Tabular settings
+%
+\RequirePackage{array}
+\RequirePackage{ragged2e}
+\newcolumntype{L}[1]{>{\RaggedRight}p{#1}}
+\newcolumntype{R}[1]{>{\RaggedLeft}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+%
+% Hyperref settings
+%
+\hypersetup{hidelinks}
+
+\makeatletter
+\iflec@external@link@symbol
+\newcommand{\ExternalLink}{%
+  \tikz[x=1ex, y=1ex, baseline=-0.5ex]{%baseline=-0.05ex]{% 
+    \begin{scope}[x=1ex, y=1ex]
+      \clip (-0.1,-0.1) 
+        --++ (-0, 1.2) 
+        --++ (0.6, 0) 
+        --++ (0, -0.6) 
+        --++ (0.6, 0) 
+        --++ (0, -1);
+      \path[draw, 
+        line width = 0.5, 
+        rounded corners=0.5] 
+        (0,0) rectangle (1,1);
+    \end{scope}
+    \path[draw, line width = 0.5] (0.6, 0.6) 
+      -- (1.2, 1.2);
+    \path[draw, line width = 0.5] (0.75, 1.2) 
+      -- (1.2, 1.2) -- (1.2, 0.75);
+    }
+  }
+
+
+\newcommand\ehref[2]{\href{#1}{\underline{#2}\,\ExternalLink}}
+\renewcommand{\url}[1]{\ehref{#1}{\nolinkurl{#1}}}
+
+
+\fi
+%
+% tcolorbox settings
+%
+% \tcbset{
+%   highlight math style={
+%     enhanced,colframe=red,colback=white,arc=0pt,boxrule=1pt}}
+
+%
+% Tikz settings
+%
+\RequirePackage{tikz}
+
+\makeatletter
+\iflec@tikz@styles
+  \input{lecture.tikzstyles.tex}
+\fi
+\iflec@pgfplots@styles
+  \input{lecture.pgfplotsstyles.tex}
+\fi
+\makeatother
+
+%
+% Patches and fixes
+%
+% \makeatletter
+% \patchcmd{\@verbatim}
+%   {\verbatim@font}
+%   {\verbatim@font\tiny}
+%   {}{}
+% \makeatother
+
+%
+% Code highlighting settings
+%
+\makeatletter
+\ifcase\lec@code@printing
+\or
+  \input{lecture.listings.tex}
+\or
+  \input{lecture.minted.tex}
+\fi
+\makeatother
+
+%
+% Custom commands
+%
+
+\let\insertcourse=\relax
+\let\insertshortcourse=\relax
+\let\insertcoursecode=\relax
+\NewDocumentCommand\course{ o O{#3} m }{%
+  \IfNoValueF{#1}{\def\insertcoursecode{#1}}
+  \def\insertshortcourse{#2}
+  \def\insertcourse{#3}
+  \title[#2]{#3}}
+
+\def\matlab{\texttt{Matlab}\xspace}
+\def\python{\texttt{Python}\xspace}
+
+%
+% Patches
+%
+
+% Insert comma between footnotes
+\makeatletter
+\let\old@footnote\footnote
+\newcommand\nextToken\relax
+
+\renewcommand\footnote[1]{%
+    \old@footnote{#1}\futurelet\nextToken\isFootnote}
+
+\newcommand\isFootnote{%
+    \ifx\footnote\nextToken\textsuperscript{,}\fi}
+\makeatother
+
+\endinput
