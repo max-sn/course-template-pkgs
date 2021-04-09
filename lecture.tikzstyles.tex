@@ -1,0 +1,177 @@
+\usetikzlibrary{
+    positioning,
+    perspective,
+    arrows.meta,
+    bending,
+    decorations.pathreplacing,
+    patterns,
+    matrix,
+    3d,
+    calc,
+    chains
+}
+
+\tikzset{
+    >=Stealth,
+    vector/.style={-{Latex}},
+    axis/.style={-{Straight Barb}},
+    x-axis/.style={draw=red, axis},
+    y-axis/.style={draw=green, axis},
+    z-axis/.style={draw=blue, axis},
+    check axis/.code={
+        \pgfmathparse{veclen(\x1,\y1) < 0.001)}
+        \ifnum\pgfmathresult=1
+            % \pgfkeysalso{opacity = 0.5}
+            \pgfkeysalso{draw=none}
+        \fi
+    },
+    draw cs/.style={
+        execute at end scope={%
+            % \draw[x-axis] (0,0,0) -- ++(1,0,0);
+            % \draw[y-axis] (0,0,0) -- ++(0,1,0);
+            \path let \p1 = (1,0,0) in [x-axis, check axis] (0,0,0) -- (\p1);
+            \path let \p1 = (0,1,0) in [y-axis, check axis] (0,0,0) -- (\p1);
+            \path let \p1 = (0,0,1) in [z-axis, check axis] (0,0,0) -- (\p1);
+            \fill[axis] circle (0.5*\pgflinewidth);
+        },
+    },
+    DH/.style n args={4}{
+      rotate around z={#1},
+      shift={(#3, 0, #2)},
+      rotate around x={#4},
+    },
+}
+
+\tikzset{
+  A/.style={
+      Green,
+  },
+  B/.style={
+      Pink,
+  },
+  C/.style={
+      LightBlue
+  },
+  point/.style={
+      fill,circle, minimum size=3pt, inner sep=0pt,
+  },
+  pixel point/.style={
+      fill=Pink,
+      draw=white,
+      line width=1pt,
+      point, minimum size=2.5mm,
+  },
+  axis/.append style={line width=1pt},
+  vector/.append style={line width=1pt},
+  draw on/.code 2 args={
+    \node[inner sep=0pt] (im) {\includegraphics[#1]{#2}};
+    \pgfkeysalso{
+      % at begin scope/.code={
+      % }
+      shift={(im.south west)},
+      x={(im.south east)},
+      y={(im.north west)}
+    }
+  },
+  invisible/.style={opacity=0, text opacity=0},
+  visible on/.style={alt={#1{}{invisible}}},
+  focus on/.style={alt={#1{}{fade}}},
+  fade/.style={opacity=0.2, text opacity=0.2},
+  inverse fade/.style={opacity=0.8, text opacity=0.8},
+  inverse focus on/.style={alt={#1{invisible}{inverse fade}}},
+  alert on/.code args={<#1>}{%
+    \alt<beamer:#1|handout:0>{\usebeamercolor{alerted text}\pgfkeysalso{fg}}{}%
+  },
+  alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}%
+  },
+  minor grid/.style={
+    help lines, xstep=0.1, ystep=0.1,
+  },
+}
+
+\tikzset{
+  show bounding box/.style={
+    execute at end picture={
+      \path[#1] (current bounding box.north west)
+        rectangle (current bounding box.south east);
+    }
+  }
+}
+
+
+% Layers
+\pgfdeclarelayer{bbg}
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfdeclarelayer{ffg}
+\pgfsetlayers{bbg,bg,main,fg,ffg}
+
+\tikzset{
+  on layer/.is choice,
+  on layer/bbg/.style={
+    execute at begin scope={\begin{pgfonlayer}{bbg}}, 
+    execute at end scope={\end{pgfonlayer}}},
+  on layer/bg/.style={
+    execute at begin scope={\begin{pgfonlayer}{bg}}, 
+    execute at end scope={\end{pgfonlayer}}},
+  on layer/fg/.style={
+    execute at begin scope={\begin{pgfonlayer}{fg}}, 
+    execute at end scope={\end{pgfonlayer}}},
+  on layer/ffg/.style={
+    execute at begin scope={\begin{pgfonlayer}{ffg}}, 
+    execute at end scope={\end{pgfonlayer}}},
+}
+
+
+
+% \makeatletter
+\newif\if@drawon@majorgrid
+\newif\if@drawon@minorgrid
+\newif\if@drawon@numbering
+\pgfkeys{
+  /draw on/.cd,
+    include options/.estore in=\lec@drawon@includeoptions,
+    include options={},
+    grid/.code={\pgfkeys{/draw on/grid/.cd,major grid=true,#1}},
+    node style/.style={},
+    node options/.style={/draw on/node style/.append style={#1}},
+    scope style/.style={},
+    scope options/.style={/draw on/scope style/.append style={#1}},
+  /draw on/grid/.cd,
+      major grid/.is if=@drawon@majorgrid,
+      major grid/.default=true,
+      major grid=false,
+      minor grid/.is if=@drawon@minorgrid,
+      minor grid/.default=true,
+      minor grid=false,
+      step/.is choice,
+      step/relative/.code={
+        \def\lec@drawmajorgrid{\draw[help lines, black, xstep=0.1, ystep=0.1] (0,0) grid (1,1);}
+        \def\lec@drawminorgrid{\draw[help lines, xstep=0.01, ystep=0.01] (0,0) grid (1,1);}
+      },
+      step/absolute/.code={
+        \def\lec@drawmajorgrid{\draw[help lines, black, xstep=1cm, ystep=1cm] (0,0) grid (1,1);}
+        \def\lec@drawminorgrid{\draw[help lines, xstep=1mm, ystep=1mm] (0,0) grid (1,1);}
+      },
+      step=relative,
+      numbering/.is if=@drawon@numbering,
+      numbering/.default=true,
+      numbering=false,
+  /draw on/.cd,
+}
+% \makeatother
+
+\NewDocumentEnvironment{drawon}{ O{} m }
+{%
+  \pgfkeys{/draw on/.cd, #1}%
+  \node[inner sep=0pt, /draw on/node style] (im) {\expandafter\includegraphics\expandafter[\lec@drawon@includeoptions]{#2}};%
+  \begin{scope}[shift={(im.south west)}, x={(im.south east)}, y={(im.north west)}, /draw on/scope style]%
+  \if@drawon@minorgrid\lec@drawminorgrid\fi
+  \if@drawon@majorgrid\lec@drawmajorgrid\fi
+}
+{%
+  \end{scope}
+}
+
+\endinput

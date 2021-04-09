@@ -1,0 +1,52 @@
+% Matlab code environment without 'block'
+\newminted[lecmatlabcode]{matlab}{%
+  autogobble, linenos, xleftmargin=3.5mm, numbersep=2mm}
+
+% Matlab code environment with surrounding 'block'
+\newenvironment{matlabcode}%
+  {\VerbatimEnvironment\begin{block}{}\begin{lecmatlabcode}}%
+  {\end{lecmatlabcode}\end{block}}
+
+% Matlab snippet environment (no line numbering) with surrounding 'block'
+\newenvironment{matlabsnippet}%
+  {\VerbatimEnvironment\begin{block}{}\begin{lecmatlabcode*}{linenos=false,xleftmargin=0pt}}%
+  {\end{lecmatlabcode*}\end{block}}
+
+% Inline Matlab snippet command
+\newmintinline[matlabsnippetinline]{matlab}{}
+
+% Python code environment without 'block'
+\newminted[lecpythoncode]{python}{%
+    autogobble, linenos, xleftmargin=3.5mm, numbersep=2mm}
+
+% Python code environment with surrounding 'block'
+\newenvironment{pythoncode}%
+  {\VerbatimEnvironment\begin{block}{}\begin{lecpythoncode}}%
+  {\end{lecpythoncode}\end{block}}
+
+% Python snippet environment (no line numbering) with surrounding 'block'
+\newenvironment{pythonsnippet}
+  {\VerbatimEnvironment\begin{block}{}\begin{lecpythoncode*}{linenos=false,xleftmargin=0pt}}%
+  {\end{lecpythoncode*}\end{block}}
+
+% Inline Python snippet command
+\newmintinline[pythonsnippetinline]{python}{}
+
+% Shell code environment without 'block' (default without line numbering)
+\newminted[lecshellcode]{shell}{autogobble}
+
+% Shell snippet environment with surrounding 'block'
+\newenvironment{shellsnippet}%
+{\VerbatimEnvironment\begin{block}{}\begin{lecshellcode}}
+  {\end{lecshellcode}\end{block}}
+  % Change font of line numbers and disable selecting
+
+% Inline Shell snippet command
+\newmintinline[shellsnippetinline]{shell}{}
+
+% 'Hide' line numbers from copying in PDF
+\renewcommand{\theFancyVerbLine}{%
+\BeginAccSupp{method=escape,ActualText={}}%
+  \sffamily \textcolor{LightGray!50!black}{\scriptsize \arabic{FancyVerbLine}}\EndAccSupp{}}
+
+\endinput

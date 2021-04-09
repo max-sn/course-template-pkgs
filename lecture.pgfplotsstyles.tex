@@ -1,0 +1,30 @@
+\RequirePackage{pgfplots}
+
+\tikzset{
+  school axes/.style={
+    /pgfplots/every axis/.append style={
+      axis lines=middle,
+      axis line style={axis, line cap=round},
+      no markers,
+      cycle list name=saxion colors,
+      line width=2pt,
+      xtick=\empty,
+      ytick=\empty,
+      ztick=\empty,
+      % xlabel near ticks,
+      % ylabel near ticks,
+      axis on top
+    },
+  },
+}
+
+\pgfplotscreateplotcyclelist{saxion colors}{
+  Yellow, Pink, Green,
+}
+
+\pgfplotsset{
+  compat=newest,
+  table/search path={../figures, ./figures, ..},
+}
+
+\endinput
