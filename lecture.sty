@@ -128,11 +128,14 @@
   /lecture/.cd,
     date/.code={\date{#1}},
     author/.code={\author{#1}},
+    course/.code={\def\insertcourse{#1}},
+    course code/.code={\def\insertcoursecode{#1}},
+    short course/.code={\def\insertshortcourse{#1}},
 }
 
 \makeatletter
 \RenewDocumentCommand\lecture{ O{} m }{%
-  \pgfkeys{/lecture/.cd, #1}
+  \pgfkeys{/lecture/.cd,#1}
   \def\inserttitle{Lecture~\Roman{lecture}: #2}
   \def\beamer@shorttitle{\textbf{\insertshortcourse}\\Lecture \Roman{lecture}}
   \mode<presentation>{\expandafter\part{\inserttitle}}
