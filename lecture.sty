@@ -192,6 +192,7 @@
 %
 \RequirePackage{xstring}
 \RequirePackage{graphicx}
+\RequirePackage{xspace}
 \makeatletter
 \ifcase\lec@code@printing
 \or
@@ -309,6 +310,8 @@
 % Tikz settings
 %
 \RequirePackage{tikz}
+% Libraries needed for default settings
+\usetikzlibrary{positioning}
 
 \makeatletter
 \iflec@tikz@styles
